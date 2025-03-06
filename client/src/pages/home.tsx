@@ -10,7 +10,7 @@ export default function Home() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   const { data: holidays, isLoading } = useQuery<Holiday[]>({
-    queryKey: ['/api/holidays', selectedYear],
+    queryKey: [`/api/holidays/${selectedYear}`],
   });
 
   return (
