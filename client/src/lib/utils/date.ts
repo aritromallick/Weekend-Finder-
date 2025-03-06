@@ -1,11 +1,18 @@
 import { Holiday } from "@shared/schema";
-import { isWeekend, addDays, format } from "date-fns";
+import { isWeekend, addDays, format, eachDayOfInterval } from "date-fns";
+
+export interface DayInfo {
+  date: Date;
+  type: 'weekend' | 'holiday' | 'optional-leave' | 'workday';
+  holiday?: Holiday;
+}
 
 export interface LongWeekend {
   startDate: Date;
   endDate: Date;
   holidays: Holiday[];
   totalDays: number;
+  dayDetails: DayInfo[];
 }
 
 export function findLongWeekends(holidays: Holiday[]): LongWeekend[] {
@@ -45,14 +52,29 @@ export function findLongWeekends(holidays: Holiday[]): LongWeekend[] {
       );
     }
 
-    // Only add if it creates a long weekend (3 or more days)
+    // Calculate day details for the range
     const totalDays = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
     if (totalDays >= 3) {
+      const dayDetails = eachDayOfInterval({ start: startDate, end: endDate }).map(date => {
+        const dateStr = format(date, 'yyyy-MM-dd');
+        const holiday = holidays.find(h => format(new Date(h.date), 'yyyy-MM-dd') === dateStr);
+
+        if (holiday) {
+          return { date, type: 'holiday' as const, holiday };
+        } else if (isWeekend(date)) {
+          return { date, type: 'weekend' as const };
+        } else {
+          return { date, type: 'optional-leave' as const };
+        }
+      });
+
       longWeekends.push({
         startDate,
         endDate,
         holidays: connectedHolidays,
-        totalDays
+        totalDays,
+        dayDetails
       });
     }
   }

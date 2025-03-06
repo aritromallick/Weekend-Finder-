@@ -1,13 +1,13 @@
 import { holidays, type Holiday, type InsertHoliday } from "@shared/schema";
-import { addYears, subYears, format } from "date-fns";
+import { addYears, subYears, format, eachYearOfInterval } from "date-fns";
 import { STATIC_HOLIDAYS } from "@shared/schema";
 
 export interface IStorage {
-  getHolidaysByYear(year: number): Promise<Holiday[]>;
+  getHolidaysByYearAndCountry(year: number, country: string): Promise<Holiday[]>;
 }
 
 export class MemStorage implements IStorage {
-  private holidays: Map<number, Holiday[]>;
+  private holidays: Map<string, Holiday[]>;
   private currentId: number;
 
   constructor() {
@@ -17,31 +17,37 @@ export class MemStorage implements IStorage {
   }
 
   private initializeHolidays() {
-    // Initialize with static data for 2024
+    // Get a range of years from 2020 to 2030
+    const years = eachYearOfInterval({
+      start: new Date(2020, 0, 1),
+      end: new Date(2030, 11, 31)
+    }).map(date => date.getFullYear());
+
+    // Initialize with static data for 2024 India
     const holidays2024 = STATIC_HOLIDAYS.map((holiday) => ({
       ...holiday,
       id: this.currentId++
     }));
-    this.holidays.set(2024, holidays2024);
 
-    // Generate holidays for 2023 and 2025 by adjusting dates
-    const holidays2023 = holidays2024.map(h => ({
-      ...h,
-      id: this.currentId++,
-      date: format(subYears(new Date(h.date), 1), 'yyyy-MM-dd')
-    }));
-    const holidays2025 = holidays2024.map(h => ({
-      ...h,
-      id: this.currentId++,
-      date: format(addYears(new Date(h.date), 1), 'yyyy-MM-dd')
-    }));
+    // Store 2024 holidays
+    this.holidays.set('2024_IN', holidays2024);
 
-    this.holidays.set(2023, holidays2023);
-    this.holidays.set(2025, holidays2025);
+    // Generate holidays for other years by adjusting dates
+    years.forEach(year => {
+      if (year !== 2024) {
+        const yearDiff = year - 2024;
+        const yearHolidays = holidays2024.map(h => ({
+          ...h,
+          id: this.currentId++,
+          date: format(addYears(new Date(h.date), yearDiff), 'yyyy-MM-dd')
+        }));
+        this.holidays.set(`${year}_IN`, yearHolidays);
+      }
+    });
   }
 
-  async getHolidaysByYear(year: number): Promise<Holiday[]> {
-    return this.holidays.get(year) || [];
+  async getHolidaysByYearAndCountry(year: number, country: string): Promise<Holiday[]> {
+    return this.holidays.get(`${year}_${country}`) || [];
   }
 }
 

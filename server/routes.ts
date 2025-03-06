@@ -3,14 +3,19 @@ import { createServer } from "http";
 import { storage } from "./storage";
 
 export async function registerRoutes(app: Express) {
-  app.get("/api/holidays/:year", async (req, res) => {
+  app.get("/api/holidays/:year/:country", async (req, res) => {
     const year = parseInt(req.params.year);
-    
-    if (isNaN(year) || year < 2023 || year > 2025) {
-      return res.status(400).json({ message: "Invalid year. Must be between 2023 and 2025" });
+    const country = req.params.country.toUpperCase();
+
+    if (isNaN(year) || year < 2020 || year > 2030) {
+      return res.status(400).json({ message: "Invalid year. Must be between 2020 and 2030" });
     }
 
-    const holidays = await storage.getHolidaysByYear(year);
+    if (!country) {
+      return res.status(400).json({ message: "Country code is required" });
+    }
+
+    const holidays = await storage.getHolidaysByYearAndCountry(year, country);
     res.json(holidays);
   });
 

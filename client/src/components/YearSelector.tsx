@@ -6,15 +6,20 @@ interface YearSelectorProps {
 }
 
 export function YearSelector({ selectedYear, onYearChange }: YearSelectorProps) {
+  // Generate years from 2020 to 2030
+  const years = Array.from({ length: 11 }, (_, i) => 2020 + i);
+
   return (
     <Select value={selectedYear.toString()} onValueChange={(value) => onYearChange(parseInt(value))}>
       <SelectTrigger className="w-[180px]">
         <SelectValue placeholder="Select year" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="2023">2023</SelectItem>
-        <SelectItem value="2024">2024</SelectItem>
-        <SelectItem value="2025">2025</SelectItem>
+        {years.map(year => (
+          <SelectItem key={year} value={year.toString()}>
+            {year}
+          </SelectItem>
+        ))}
       </SelectContent>
     </Select>
   );
