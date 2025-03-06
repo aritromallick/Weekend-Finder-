@@ -1,5 +1,5 @@
 import { holidays, type Holiday, type InsertHoliday } from "@shared/schema";
-import { addYears, subYears } from "date-fns";
+import { addYears, subYears, format } from "date-fns";
 import { STATIC_HOLIDAYS } from "@shared/schema";
 
 export interface IStorage {
@@ -28,12 +28,12 @@ export class MemStorage implements IStorage {
     const holidays2023 = holidays2024.map(h => ({
       ...h,
       id: this.currentId++,
-      date: subYears(new Date(h.date), 1)
+      date: format(subYears(new Date(h.date), 1), 'yyyy-MM-dd')
     }));
     const holidays2025 = holidays2024.map(h => ({
       ...h,
       id: this.currentId++,
-      date: addYears(new Date(h.date), 1)
+      date: format(addYears(new Date(h.date), 1), 'yyyy-MM-dd')
     }));
 
     this.holidays.set(2023, holidays2023);

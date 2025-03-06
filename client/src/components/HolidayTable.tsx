@@ -77,7 +77,7 @@ export function HolidayTable({ holidays }: HolidayTableProps) {
                     </TableCell>
                     <TableCell>
                       {longWeekend && (
-                        <Badge variant="success" className="bg-green-500">
+                        <Badge variant="default" className="bg-green-500 hover:bg-green-600">
                           {longWeekend.totalDays} days
                         </Badge>
                       )}
